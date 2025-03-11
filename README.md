@@ -1,10 +1,10 @@
 # masked-autoencoders-cows
 
-This repository contains the code used in my final graduation project, which involves using masked autoencoders as feature extractors for bovine images. It is divided into several notebooks.
+This repository contains the code used in my final undergraduation project, which involves using masked autoencoders as feature extractors for bovine images. It is divided into several notebooks.
 
 ## Notebooks
 
-### pretraining
+### pre-training
 Responsible for the model's pre-training.
 
 ### feature_extractor
