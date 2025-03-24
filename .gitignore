@@ -5,3 +5,5 @@ archive.zip
 data
 pre-trained-models
 __pycache__
+pytorch/checkpoints
+

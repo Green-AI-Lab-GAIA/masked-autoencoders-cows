@@ -20,8 +20,7 @@ class MaskedAutoEncoder(nn.Module):
         # IMPORTANT: Update the project module to use in_channels (instead of 3)
         self.project = nn.Sequential(
             nn.Conv2d(in_channels=in_channels, out_channels=patch_size**2 * in_channels, kernel_size=patch_size, stride=patch_size),
-            Rearrange('b e (h) (w) -> b (h w) e'),
-        )
+            Rearrange('b e (h) (w) -> b (h w) e'))
 
     def random_masking(self, x, mask_ratio):
         """
