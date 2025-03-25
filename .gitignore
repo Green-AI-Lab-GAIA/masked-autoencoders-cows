@@ -6,4 +6,5 @@ data
 pre-trained-models
 __pycache__
 pytorch/checkpoints
+facebook_implementation/checkpoints
 
