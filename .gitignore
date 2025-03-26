@@ -3,7 +3,7 @@ png_512
 png_512.zip
 archive.zip
 data
-pre-trained-models
+tensorflow/pre-trained-models
 __pycache__
 pytorch/checkpoints
 facebook_implementation/checkpoints
