@@ -7,4 +7,7 @@ tensorflow/pre-trained-models
 __pycache__
 pytorch/checkpoints
 facebook_implementation/checkpoints
-
+new_sample
+padded_sample
+processed_data
+tests.ipynb
