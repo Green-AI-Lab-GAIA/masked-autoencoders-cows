@@ -22,7 +22,7 @@ This implementation is based on the **Facebook Research** code, originally devel
    - **Important:** Make sure to set the same `IMAGE_SIZE` used in `pre_processing.ipynb`.  
    - Configure the hyperparameters in this notebook.  
 
-5. For feature extraction, use `pytorch/feature_extractor.ipynb`.  
+5.  ...
 
 ### **Reference**  
 
