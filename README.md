@@ -1,28 +1,53 @@
-# Masked Autoencoders for Bovine Images
+# **Masked Autoencoders for Bovine Images**  
 
-This repository contains the code used in my final undergraduate project, which explores the use of masked autoencoders as feature extractors for bovine images. The project is divided into several Jupyter notebooks and a script for defining the model.
+---
 
-## Notebooks
+## **PyTorch Implementation (Recommended)**  
 
-### `pre-training.ipynb`
-This notebook is responsible for pre-training the masked autoencoder model on bovine image data.
+This implementation is based on the **Facebook Research** code, originally developed in PyTorch. The code has been modified to accept rectangular images from the dataset.  
 
-### `feature_extractor.ipynb`
-This notebook utilizes the pre-trained model's encoder to generate latent representations of bovine images.
+### **Instructions**  
 
-## Script
+1. Use a virtual environment (**`pyenv` is recommended**).  
+2. Install the dependencies:  
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. **Prepare the dataset:**  
+   - All images should be the same size.  
+   - Use `pre_processing.ipynb` to resize the images and split the dataset.  
 
-### `mae_model.py`
-This script contains the implementation of the Masked Autoencoder model and defines key hyperparameters.
+4. **Pre-train the model:**  
+   - If using **NumPy files**, run `pytorch/pre-training-new-sample.ipynb`.  
+   - **Important:** Make sure to set the same `IMAGE_SIZE` used in `pre_processing.ipynb`.  
+   - Configure the hyperparameters in this notebook.  
 
-## Instructions
+5. For feature extraction, use `pytorch/feature_extractor.ipynb`.  
 
-1. Set the model size and mask proportion in `mae_model.py`.
-2. Choose your task:
-   - To pre-train a model on new data, use `pre-training.ipynb`.
-   - To use a pre-trained encoder for feature extraction, run `feature_extractor.ipynb`.
+### **Reference**  
 
-## Reference
+This implementation is based on the following repository: [Masked Autoencoders: A PyTorch Implementation](https://github.com/facebookresearch/mae).  
 
-This implementation is based on the following tutorial: [Masked Image Modeling with Keras](https://keras.io/examples/vision/masked_image_modeling/).
+---
+
+## **TensorFlow Implementation (Not Recommended)**  
+
+This repository contains the code used in my **undergraduate final project**, which explores the use of **Masked Autoencoders** as feature extractors for bovine images. The project is divided into **several Jupyter notebooks** and a script for defining the model.  
+
+### **Instructions**  
+
+1. Use a virtual environment (**`pyenv` is recommended**).  
+2. Install the dependencies:  
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Set the model size and mask proportion in the `tensorflow/mae_model.py` file.  
+4. Choose your task:  
+   - To **pre-train** a model on new data, use `tensorflow/pre-training.ipynb`.  
+   - To **extract features** using a pre-trained encoder, run `tensorflow/feature_extractor.ipynb`.  
+
+### **Reference**  
+
+This implementation is based on the following tutorial: [Masked Image Modeling with Keras](https://keras.io/examples/vision/masked_image_modeling/).  
+
 
