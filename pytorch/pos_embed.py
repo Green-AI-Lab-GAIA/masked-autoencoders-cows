@@ -37,6 +37,31 @@ def get_2d_sincos_pos_embed(embed_dim, grid_size, cls_token=False):
     return pos_embed
 
 
+def get_2d_sincos_pos_embed_rect(embed_dim, grid_size_h, grid_size_w, cls_token=False):
+    """
+    grid_size_h: int, grid height
+    grid_size_w: int, grid width
+    return:
+    pos_embed: [grid_size_h * grid_size_w, embed_dim] or [1 + grid_size_h * grid_size_w, embed_dim] (w/ or w/o cls_token)
+    """
+    grid_h = np.arange(grid_size_h, dtype=np.float32)
+    grid_w = np.arange(grid_size_w, dtype=np.float32)
+    grid = np.meshgrid(grid_w, grid_h, indexing='ij')  # (W, H)
+    grid = np.stack(grid, axis=0)  # (2, W, H)
+
+    grid = grid.reshape([2, 1, grid_size_h, grid_size_w])
+    
+    # Calcula os embeddings posicionais
+    pos_embed = get_2d_sincos_pos_embed_from_grid(embed_dim, grid)
+    
+    if cls_token:
+        pos_embed = np.concatenate([np.zeros([1, embed_dim]), pos_embed], axis=0)
+    
+    return pos_embed
+
+
+
+
 def get_2d_sincos_pos_embed_from_grid(embed_dim, grid):
     assert embed_dim % 2 == 0
 

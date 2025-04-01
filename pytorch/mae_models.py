@@ -17,7 +17,7 @@ import torch.nn as nn
 from timm.models.vision_transformer import PatchEmbed, Block
 
 
-from pos_embed import get_2d_sincos_pos_embed
+from pos_embed import get_2d_sincos_pos_embed, get_2d_sincos_pos_embed_rect
 
 
 class MaskedAutoencoderViT(nn.Module):
@@ -34,6 +34,9 @@ class MaskedAutoencoderViT(nn.Module):
         self.patch_embed = PatchEmbed(img_size, patch_size, in_chans, embed_dim)
         num_patches = self.patch_embed.num_patches
         self.in_chans = in_chans
+
+        self.grid_size_w = img_size[1] // patch_size
+        self.grid_size_h = img_size[0] // patch_size
 
         self.cls_token = nn.Parameter(torch.zeros(1, 1, embed_dim))
         self.pos_embed = nn.Parameter(torch.zeros(1, num_patches + 1, embed_dim), requires_grad=False)  # fixed sin-cos embedding
@@ -67,10 +70,10 @@ class MaskedAutoencoderViT(nn.Module):
     def initialize_weights(self):
         # initialization
         # initialize (and freeze) pos_embed by sin-cos embedding
-        pos_embed = get_2d_sincos_pos_embed(self.pos_embed.shape[-1], int(self.patch_embed.num_patches**.5), cls_token=True)
+        pos_embed = get_2d_sincos_pos_embed_rect(self.pos_embed.shape[-1], int(self.grid_size_h), int(self.grid_size_w) , cls_token=True)
         self.pos_embed.data.copy_(torch.from_numpy(pos_embed).float().unsqueeze(0))
 
-        decoder_pos_embed = get_2d_sincos_pos_embed(self.decoder_pos_embed.shape[-1], int(self.patch_embed.num_patches**.5), cls_token=True)
+        decoder_pos_embed = get_2d_sincos_pos_embed_rect(self.decoder_pos_embed.shape[-1], int(self.grid_size_h), int(self.grid_size_w) , cls_token=True)
         self.decoder_pos_embed.data.copy_(torch.from_numpy(decoder_pos_embed).float().unsqueeze(0))
 
         # initialize patch_embed like nn.Linear (instead of nn.Conv2d)
@@ -94,32 +97,39 @@ class MaskedAutoencoderViT(nn.Module):
             nn.init.constant_(m.bias, 0)
             nn.init.constant_(m.weight, 1.0)
 
+                    
     def patchify(self, imgs):
         """
-        imgs: (N, 3, H, W)
-        x: (N, L, patch_size**2 *3)
-        """
-        p = self.patch_embed.patch_size[0]
-        assert imgs.shape[2] == imgs.shape[3] and imgs.shape[2] % p == 0
+        Splits images into patches.
 
-        h = w = imgs.shape[2] // p
-        x = imgs.reshape(shape=(imgs.shape[0], self.in_chans, h, p, w, p))
-        x = torch.einsum('nchpwq->nhwpqc', x)
-        x = x.reshape(shape=(imgs.shape[0], h * w, p**2 * self.in_chans))
+        imgs: (N, C, H, W) - Input images
+        x: (N, L, patch_size**2 * C) - Output patches
+        """
+        p_h, p_w = self.patch_embed.patch_size  # Patch size (height, width)
+        assert imgs.shape[2] % p_h == 0 and imgs.shape[3] % p_w == 0, "H and W must be multiples of patch_size"
+        
+        h, w = self.grid_size_h, self.grid_size_w  # Number of patches per dimension
+        x = imgs.reshape(shape=(imgs.shape[0], self.in_chans, h, p_h, w, p_w))
+        x = torch.einsum('nchpwq->nhwpqc', x)  # Reorder axes
+        x = x.reshape(shape=(imgs.shape[0], h * w, p_h * p_w * self.in_chans))  # Flatten patches
         return x
+
 
     def unpatchify(self, x):
         """
-        x: (N, L, patch_size**2 *3)
-        imgs: (N, 3, H, W)
+        Reconstructs images from patches.
+
+        x: (N, L, patch_size**2 * C) - Input patches
+        imgs: (N, C, H, W) - Reconstructed images
         """
-        p = self.patch_embed.patch_size[0]
-        h = w = int(x.shape[1]**.5)
-        assert h * w == x.shape[1]
+        p_h, p_w = self.patch_embed.patch_size  # Patch size (height, width)
         
-        x = x.reshape(shape=(x.shape[0], h, w, p, p, self.in_chans))
-        x = torch.einsum('nhwpqc->nchpwq', x)
-        imgs = x.reshape(shape=(x.shape[0], self.in_chans, h * p, h * p))
+        h, w = self.grid_size_h, self.grid_size_w  # Number of patches per dimension
+        assert h * w == x.shape[1], "Number of patches does not match H and W dimensions"
+
+        x = x.reshape(shape=(x.shape[0], h, w, p_h, p_w, self.in_chans))
+        x = torch.einsum('nhwpqc->nchpwq', x)  # Reorder axes
+        imgs = x.reshape(shape=(x.shape[0], self.in_chans, h * p_h, w * p_w))  # Reconstruct the original image
         return imgs
 
     def random_masking(self, x, mask_ratio):
